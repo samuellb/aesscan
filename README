@@ -1,0 +1,45 @@
+AESScan
+-------
+
+This is a command line utility to search binary data for possible AES keys.
+You will need one or more ciphertexts encrypted using the key that is
+suspected to appear in the binary file. The ciphertexts are used to attempt
+decryption, and check if the resulting plaintext makes any sense. The
+plaintext is assumed to contain either a large number of zero bytes (typical
+for binary data) or a very small number of uncommon control characters
+(typical for text files). So it's not possible to use this tool on random data
+that has been encrypted, or data that has been encrypted multiple times.
+
+The command line syntax is:
+
+    aesscan -s binary.bin [options] ciphertext1.bin ciphertext2.bin ...
+
+Where binary.bin is the file to search for keys in. Supported options are:
+
+   -c CIPHER   Set the cipher to use:
+                    0   AES128 with CBC (default)
+                    1   AES128 with ECB
+                    2   AES256 with CBC
+                    3   AES256 with ECB
+   -p PADDING  Set the padding to use:
+                    0   PKCS#5 (default)
+                    1   Simply throw away the last block
+                    2   No padding
+   -l LEN      Try to decrypt only up to LEN bytes in the FILES
+   -o OFFSET   Start from the given byte offset in the FILES
+
+The -o and -l options are parsed from left to right. An -o or -l option must
+occur before the ciphertext file(s) it should to apply to.
+
+AES is typically used with a block mode and a padding. CBC and PKCS#7
+is the most common block mode and padding, so these are the defaults.
+When the padding type is unknown, it is useful to use "throw away" option
+(number 1) which will simply skip the last encrypted block. This option will
+obviously only work if the data is more than 16 bytes, which is the block
+size of AES (regardless of key size).
+
+For block modes other than ECB, this tool will assume that the first 16 bytes
+is the Initialization Vector (IV) for the following data. This is the most
+common way of encoding encrypted AES data.
+
+
